@@ -1,0 +1,67 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum DriverStatus {
+  AVAILABLE
+  IN_TRANSIT
+  OFFLINE
+}
+
+enum DeliveryStatus {
+  PENDING
+  COLLECTED
+  DELIVERING
+  DELIVERED
+  RETURNED
+}
+
+model Driver {
+  id         String       @id @default(uuid()) @db.Uuid
+  name       String
+  licenseId  String       @unique
+  status     DriverStatus @default(AVAILABLE)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  deliveries Delivery[]
+
+  @@map("drivers")
+}
+
+model Delivery {
+  id            String          @id @default(uuid()) @db.Uuid
+  trackingCode  String          @unique @db.VarChar(8)
+  description   String
+  status        DeliveryStatus  @default(PENDING)
+  origin        String
+  destination   String
+  latitude      Float?
+  longitude     Float?
+  driverId      String?         @db.Uuid
+  driver        Driver?         @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  statusHistory StatusHistory[]
+
+  @@index([driverId])
+  @@index([status])
+  @@map("deliveries")
+}
+
+model StatusHistory {
+  id         String         @id @default(uuid()) @db.Uuid
+  deliveryId String         @db.Uuid
+  delivery   Delivery       @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  status     DeliveryStatus
+  latitude   Float?
+  longitude  Float?
+  changedAt  DateTime       @default(now())
+
+  @@index([deliveryId, changedAt])
+  @@map("status_history")
+}
