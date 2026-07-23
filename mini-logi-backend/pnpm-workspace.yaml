@@ -4,3 +4,7 @@ allowBuilds:
   '@scarf/scarf': false
   esbuild: true
   prisma: true
+
+overrides:
+  electron-to-chromium: 1.5.392
+  swagger-ui-dist: 5.32.8

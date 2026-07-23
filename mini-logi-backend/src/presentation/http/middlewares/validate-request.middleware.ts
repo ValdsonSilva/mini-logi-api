@@ -5,14 +5,16 @@ import type {
 } from 'express';
 import type { ZodType } from 'zod';
 
-export function validateRequest(schema: ZodType) {
+export function validateRequest(
+    schema: ZodType<unknown>,
+) {
     return (
         request: Request,
         response: Response,
         next: NextFunction,
     ): void => {
         const validatedInput = schema.parse({
-            body: request.body,
+            body: request.body as unknown,
             params: request.params,
             query: request.query,
         });

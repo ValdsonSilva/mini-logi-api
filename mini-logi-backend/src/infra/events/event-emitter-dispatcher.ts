@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events'; // dependencia nativa do node.js para emissão de eventos
+import { EventEmitter } from 'node:events';
 
 import type {
     EventDispatcher,
@@ -12,37 +12,60 @@ type AsyncEventListener = (
     event: DomainEvent,
 ) => Promise<void>;
 
-export class EventEmitterDispatcher implements EventDispatcher {
-    private readonly emitter = new EventEmitter();
+export class EventEmitterDispatcher
+    implements EventDispatcher {
+    private readonly emitter =
+        new EventEmitter();
 
-    public register<TEvent extends DomainEvent>(
+    public register<
+        TEvent extends DomainEvent,
+    >(
         eventName: string,
         handler: EventHandler<TEvent>,
     ): void {
-        const listener: AsyncEventListener = async (
-            event,
-        ) => {
-            await handler.handle(event as TEvent); // metodo que ira executar o handler do evento, passando o evento como argumento
-        };
+        const listener:
+            AsyncEventListener = async (
+                event,
+            ) => {
+                await handler.handle(
+                    event as TEvent,
+                );
+            };
 
-        this.emitter.on(eventName, listener); // registra o listener para o evento especificado
+        // EventEmitter types listeners as void
+        // callbacks, while dispatch() retrieves
+        // and awaits these promises explicitly.
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        this.emitter.on(
+            eventName,
+            listener,
+        );
     }
 
     public async dispatch(
         event: DomainEvent,
     ): Promise<void> {
-        const listeners = this.emitter.listeners(
-            event.name,
-        ) as AsyncEventListener[];
+        const listeners =
+            this.emitter.listeners(
+                event.name,
+            ) as AsyncEventListener[];
 
-        logger.info(`Event ${event.name} emitted`, {
-            eventName: event.name,
-            occurredAt: event.occurredAt.toISOString(),
-            ...this.asLogMetadata(event.payload),
-        });
+        logger.info(
+            `Event ${event.name} emitted`,
+            {
+                eventName: event.name,
+                occurredAt:
+                    event.occurredAt.toISOString(),
+                ...this.asLogMetadata(
+                    event.payload,
+                ),
+            },
+        );
 
         await Promise.all(
-            listeners.map((listener) => listener(event)),
+            listeners.map((listener) =>
+                listener(event),
+            ),
         );
     }
 
@@ -53,7 +76,10 @@ export class EventEmitterDispatcher implements EventDispatcher {
             typeof payload === 'object' &&
             payload !== null
         ) {
-            return payload as Record<string, unknown>;
+            return payload as Record<
+                string,
+                unknown
+            >;
         }
 
         return { payload };

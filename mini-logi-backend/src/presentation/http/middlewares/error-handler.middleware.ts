@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+// Avoid importing Prisma types that may not expose runtime error classes in this environment
 import type { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../../../core/domain/errors/app-error.js';
@@ -51,11 +51,9 @@ export const errorHandler: ErrorRequestHandler = (
         return;
     }
 
-    if (
-        error instanceof
-        Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-    ) {
+    // Handle Prisma unique constraint error (P2002).
+    // Use a safe runtime check to avoid relying on Prisma's exported classes.
+    if ((error as any)?.code === 'P2002') {
         response.status(409).json({
             error: {
                 code: 'RESOURCE_CONFLICT',

@@ -4,14 +4,15 @@ import { logger } from '../../logging/logger.js';
 
 export class NotificationHandler
     implements EventHandler<DeliveryStatusChangedEvent> {
-    public async handle(
+    public handle(
         event: DeliveryStatusChangedEvent,
     ): Promise<void> {
         logger.info(
             'Delivery status notification simulated',
             {
                 eventName: event.name,
-                deliveryId: event.payload.deliveryId,
+                deliveryId:
+                    event.payload.deliveryId,
                 trackingCode:
                     event.payload.trackingCode,
                 previousStatus:
@@ -19,5 +20,7 @@ export class NotificationHandler
                 status: event.payload.status,
             },
         );
+
+        return Promise.resolve();
     }
 }
