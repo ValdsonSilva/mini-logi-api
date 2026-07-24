@@ -23,6 +23,7 @@ export class CreateDriverUseCase {
             );
         }
 
+        // essa constante vira uma instância de Driver por meio da entidade pura
         const driver = Driver.create({
             name: input.name,
             licenseId: normalizedLicenseId,
